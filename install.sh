@@ -12,6 +12,6 @@ else
 	echo "Need 'curl' or 'wget' available on \$PATH to install git-list automatically!"
 fi
 
-git config --global alias.list '!bash ${HOME}/.git-list'
+git config --global alias.list '!bash '${HOME}'/.git-list'
 
 echo "All done! You can now use 'git list [config]'."
