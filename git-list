@@ -19,8 +19,11 @@ HAS_GBL=$([ -n "$(cat ${TMP_FILE}.gbl)" ] ; echo $?)
 HAS_LCL=$([ -n "$(cat ${TMP_FILE}.lcl)" ] ; echo $?)
 
 if [ $(( ${HAS_SYS} + ${HAS_GBL} + ${HAS_LCL} )) -ne 3 ]; then
-	echo "Printing all Git configurations for section '${PARAM}':"
+	echo "Printing all Git configurations for section [${PARAM}]"
 	echo
+else
+	echo "No configurations found under [${PARAM}]"
+	exit 1
 fi
 
 if [ -n "$(cat ${TMP_FILE}.sys)" ]; then
