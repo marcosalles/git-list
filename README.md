@@ -12,4 +12,4 @@ Adds a `git list` command to your global git config file that prints all configu
 git list [category]
 ```
 
-`category` is optional and defaults to `alias`. If no configs for a category are found, the script skips that category. If no configs are found in all categories, quits with `exit code 1`.
+`category` is optional and defaults to `alias`. If no configs for a section are found, the script skips that section. If no configs are found in any section, quits with `exit code 1`.
