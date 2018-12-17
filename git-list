@@ -2,23 +2,13 @@
 
 PARAM=${1:-alias}
 
-SYSTEM_FILE="$(which prefix && prefix)/etc/gitconfig"
-GLOBAL_FILE=$([ -f "${HOME}/.gitconfig" ] && echo "${HOME}/.gitconfig" || echo "${XDG_CONFIG_HOME}/.gitconfig")
-LOCAL_FILE=".git/config"
-
 TMP_FILE=/tmp/git-list.tmp
 
-git config --show-origin --get-regexp ^${PARAM}\\. > ${TMP_FILE} 
+git config --show-origin --get-regexp ^${PARAM}\\. | sed -E 's|^file:||g' > ${TMP_FILE} 
 
-sed -E 's|^file:'${SYSTEM_FILE}'\s*'${PARAM}'\.(\w+)|  \1\t|g' ${TMP_FILE} | grep -vE '^file' > ${TMP_FILE}.sys
-sed -E 's|^file:'${GLOBAL_FILE}'\s*'${PARAM}'\.(\w+)|  \1\t|g' ${TMP_FILE} | grep -vE '^file' > ${TMP_FILE}.gbl
-sed -E 's|^file:'${LOCAL_FILE}'\s*'${PARAM}'\.(\w+)|  \1\t|g' ${TMP_FILE} | grep -vE '^file' > ${TMP_FILE}.lcl
+cat ${TMP_FILE} | awk '{print $1}' | uniq > ${TMP_FILE}.envs
 
-HAS_SYS=$([ -n "$(cat ${TMP_FILE}.sys)" ] ; echo $?)
-HAS_GBL=$([ -n "$(cat ${TMP_FILE}.gbl)" ] ; echo $?)
-HAS_LCL=$([ -n "$(cat ${TMP_FILE}.lcl)" ] ; echo $?)
-
-if [ $(( ${HAS_SYS} + ${HAS_GBL} + ${HAS_LCL} )) -ne 3 ]; then
+if [ -n "$(cat ${TMP_FILE})" ]; then
 	echo "Printing all Git configurations for section [${PARAM}]"
 	echo
 else
@@ -26,18 +16,14 @@ else
 	exit 1
 fi
 
-if [ -n "$(cat ${TMP_FILE}.sys)" ]; then
-	echo "[SYSTEM]"
-	cat ${TMP_FILE}.sys
+while read TMP_ENV; do
+	if [ "${TMP_ENV}" = "${HOME}/.gitconfig" ]; then
+		echo "[GLOBAL - ${TMP_ENV}]"
+	elif [ "${TMP_ENV}" = ".git/config" ]; then
+		echo "[LOCAL - ${TMP_ENV}]"
+	else
+		echo "[${TMP_ENV}]"
+	fi
+	cat ${TMP_FILE} | grep "${TMP_ENV}" | sed -E 's|^'${TMP_ENV}'.'${PARAM}'\.([^ ]+) (.*)|    \1  =  \2|g'
 	echo
-fi
-if [ -n "$(cat ${TMP_FILE}.gbl)" ]; then
-	echo "[GLOBAL]"
-	cat ${TMP_FILE}.gbl
-	echo
-fi
-if [ -n "$(cat ${TMP_FILE}.lcl)" ]; then
-	echo "[LOCAL]"
-	cat ${TMP_FILE}.lcl
-	echo
-fi
+done < ${TMP_FILE}.envs
