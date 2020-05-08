@@ -26,6 +26,8 @@ Printing all Git configurations for section [alias]
     st  =  status -sb
     b  =  branch
     d  =  diff
+    list  =  !bash /path/to/installed/.git-list
+
 
 [LOCAL - .git/config]
     yolo  =  !git commit -am "$(curl -s whatthecommit.com/index.txt)" && git push
